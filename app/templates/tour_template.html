@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #222; margin: 40px; }
+        h1 { font-size: 22px; margin-bottom: 4px; }
+        h2 { font-size: 14px; margin-top: 24px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+        .muted { color: #777; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        td { padding: 4px 0; }
+        td.right { text-align: right; }
+        .total td { font-weight: bold; border-top: 1px solid #333; padding-top: 8px; }
+        ul { margin: 4px 0; padding-left: 20px; }
+        .tag { display: inline-block; background: #eef; padding: 2px 6px; border-radius: 4px; margin-right: 4px; }
+    </style>
+</head>
+<body>
+
+<h1>{{ payload.route.from_place }} → {{ payload.route.to_place }}</h1>
+<p class="muted">
+    {{ payload.dates.date_from }} — {{ payload.dates.date_to }}
+</p>
+
+<h2>Чем займёмся</h2>
+<p>
+    {% for act in payload.activity %}
+        <span class="tag">{{ act }}</span>
+    {% endfor %}
+</p>
+
+<h2>Кто едет</h2>
+<p>
+    Взрослых: {{ payload.travelers.adults }},
+    детей: {{ payload.travelers.children }}
+    {% if payload.travelers.group_ski_level %}
+        · Уровень катания: {{ payload.travelers.group_ski_level }}
+    {% endif %}
+</p>
+
+{% if payload.accommodation %}
+<h2>Где остановимся</h2>
+<p>
+    {{ payload.accommodation.name }}
+    {% if payload.accommodation.partner_url %}
+        <br><span class="muted">Забронировать: {{ payload.accommodation.partner_url }}</span>
+    {% endif %}
+</p>
+{% endif %}
+
+<h2>Трансфер</h2>
+<p>
+    {% if payload.transfer.type == "needed" %}
+        Нужен трансфер
+    {% elif payload.transfer.type == "self" %}
+        Доберусь самостоятельно
+    {% elif payload.transfer.type == "own_car" %}
+        На своём автомобиле
+        {% if payload.transfer.parking_needed %} · парковка нужна{% else %} · парковка не нужна{% endif %}
+    {% endif %}
+</p>
+
+{% set opts = payload.additional_options %}
+{% if opts.accessibility.barrier_free or opts.accessibility.ramps_and_lifts or opts.accessibility.adapted_accommodation or opts.comfort.low_physical_load or opts.comfort.calm_slopes or opts.comfort.infrastructure_nearby or opts.support.escort or opts.support.equipment_help or opts.support.personal_instructor %}
+<h2>Дополнительные возможности</h2>
+
+{% if opts.accessibility.barrier_free or opts.accessibility.ramps_and_lifts or opts.accessibility.adapted_accommodation %}
+<p><strong>Доступность</strong></p>
+<ul>
+    {% if opts.accessibility.barrier_free %}<li>Безбарьерная среда</li>{% endif %}
+    {% if opts.accessibility.ramps_and_lifts %}<li>Пандусы и лифты</li>{% endif %}
+    {% if opts.accessibility.adapted_accommodation %}<li>Адаптированное проживание</li>{% endif %}
+</ul>
+{% endif %}
+
+{% if opts.comfort.low_physical_load or opts.comfort.calm_slopes or opts.comfort.infrastructure_nearby %}
+<p><strong>Комфорт</strong></p>
+<ul>
+    {% if opts.comfort.low_physical_load %}<li>Низкая физическая нагрузка</li>{% endif %}
+    {% if opts.comfort.calm_slopes %}<li>Спокойные трассы</li>{% endif %}
+    {% if opts.comfort.infrastructure_nearby %}<li>Близость инфраструктуры</li>{% endif %}
+</ul>
+{% endif %}
+
+{% if opts.support.escort or opts.support.equipment_help or opts.support.personal_instructor %}
+<p><strong>Поддержка</strong></p>
+<ul>
+    {% if opts.support.escort %}<li>Сопровождение</li>{% endif %}
+    {% if opts.support.equipment_help %}<li>Помощь с подбором оборудования</li>{% endif %}
+    {% if opts.support.personal_instructor %}<li>Индивидуальный инструктор</li>{% endif %}
+</ul>
+{% endif %}
+{% endif %}
+
+<h2>Стоимость</h2>
+<table>
+    {% if payload.price.tickets is not none %}
+    <tr><td>Билеты</td><td class="right">{{ payload.price.tickets }} ₽</td></tr>
+    {% endif %}
+    {% if payload.price.accommodation is not none %}
+    <tr><td>Проживание</td><td class="right">{{ payload.price.accommodation }} ₽</td></tr>
+    {% endif %}
+    <tr>
+        <td>Трансфер</td>
+        <td class="right">
+            {% if payload.price.transfer is not none %}{{ payload.price.transfer }} ₽{% else %}—{% endif %}
+        </td>
+    </tr>
+    <tr class="total">
+        <td>Итого</td>
+        <td class="right">{{ payload.price.total }} ₽</td>
+    </tr>
+</table>
+
+</body>
+</html>
