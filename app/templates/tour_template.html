@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: sans-serif; font-size: 12px; margin: 40px; }
+        h1 { font-size: 22px; }
+        h2 { font-size: 14px; border-bottom: 1px solid #ccc; margin-top: 24px; }
+        .muted { color: #777; }
+        table { width: 100%; border-collapse: collapse; }
+        td { padding: 4px; }
+        td.right { text-align: right; }
+        .total td { font-weight: bold; border-top: 1px solid #333; }
+    </style>
+</head>
+<body>
+<h1>{{ payload.route.from_place }} → {{ payload.route.to_place }}</h1>
+<p class="muted">{{ payload.dates.date_from }} — {{ payload.dates.date_to }}</p>
+
+<h2>Чем займёмся</h2>
+<p>{% for act in payload.activity %}{{ act }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+
+<h2>Кто едет</h2>
+<p>Взрослых: {{ payload.travelers.adults }}, детей: {{ payload.travelers.children }}
+{% if payload.travelers.group_ski_level %} · Уровень: {{ payload.travelers.group_ski_level }}{% endif %}</p>
+
+{% if payload.accommodation %}
+<h2>Где остановимся</h2>
+<p>{{ payload.accommodation.name }}</p>
+{% endif %}
+
+<h2>Трансфер</h2>
+<p>
+{% if payload.transfer.type == "needed" %}Нужен трансфер
+{% elif payload.transfer.type == "self" %}Доберусь самостоятельно
+{% else %}На своём автомобиле{% if payload.transfer.parking_needed %} · парковка нужна{% endif %}
+{% endif %}
+</p>
+
+<h2>Стоимость</h2>
+<table>
+{% if payload.price.tickets is not none %}<tr><td>Билеты</td><td class="right">{{ payload.price.tickets }} ₽</td></tr>{% endif %}
+{% if payload.price.accommodation is not none %}<tr><td>Проживание</td><td class="right">{{ payload.price.accommodation }} ₽</td></tr>{% endif %}
+<tr><td>Трансфер</td><td class="right">{% if payload.price.transfer is not none %}{{ payload.price.transfer }} ₽{% else %}—{% endif %}</td></tr>
+<tr class="total"><td>Итого</td><td class="right">{{ payload.price.total }} ₽</td></tr>
+</table>
+</body>
+</html>
