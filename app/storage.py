@@ -1,5 +1,6 @@
 import boto3
 from botocore.client import Config
+
 from app.config import settings
 
 
@@ -29,6 +30,13 @@ class S3Storage:
             return True
         except Exception:
             return False
+
+    def get_presigned_url(self, key: str, expires: int = 900) -> str:
+        return self.client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": settings.s3_bucket, "Key": key},
+            ExpiresIn=expires,
+        )
 
     def save(self, key: str, data: bytes) -> str:
         """Сохраняет файл, возвращает URL."""

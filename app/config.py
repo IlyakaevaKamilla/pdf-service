@@ -4,6 +4,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
+    app_name: str = "pdf-service"
+    debug: bool = False
+
     kafka_bootstrap_servers: str = "localhost:9092"
     kafka_group_id: str = "pdf-generator-group"
     kafka_input_topic: str = "pdf-generation-requests"
