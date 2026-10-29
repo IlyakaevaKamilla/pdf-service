@@ -2,6 +2,7 @@ import logging.config
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+
 from app.api import router
 from app.utils.logging import LOGGING_CONFIG
 from app.config import settings

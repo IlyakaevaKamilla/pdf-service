@@ -37,8 +37,8 @@ class Transfer(BaseModel):
 
 
 class Travelers(BaseModel):
-    adults: int = Field(..., ge=0)
-    children: int = Field(..., ge=0)
+    adults: int | None = Field(None, ge=0)
+    children: int = Field(None, ge=0)
     group_ski_level: str | None = None
 
 
@@ -78,9 +78,9 @@ class TourPdfPayload(BaseModel):
     route: Route
     dates: Dates
     activity: list[str]
-    accommodation: Accommodation | None = None
+    accommodation: Accommodation
     transfer: Transfer
-    travelers: Travelers
+    travelers: Travelers | None = None
     additional_options: AdditionalOptions = AdditionalOptions()
     price: Price
 

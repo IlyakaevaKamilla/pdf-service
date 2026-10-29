@@ -48,5 +48,13 @@ class S3Storage:
         )
         return f"{settings.s3_endpoint_url}/{settings.s3_bucket}/{key}"
 
+    def get_file_stream(self, key: str):
+        """поток байтов из S3 для стриминга клиенту."""
+        try:
+            response = self.client.get_object(Bucket=settings.s3_bucket, Key=key)
+            return response["Body"].iter_chunks()
+        except Exception:
+            return None
+
 
 storage = S3Storage()
