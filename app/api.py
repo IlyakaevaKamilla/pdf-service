@@ -1,6 +1,7 @@
 import json
 import logging
 import asyncio
+from datetime import datetime
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
@@ -12,7 +13,6 @@ from app.kafka_producer import publish_request
 from app.sanitize import sanitize_payload
 from app.sse_manager import register_connection, unregister_connection, send_to_connection, get_finished_result
 from app.storage import storage
-from app.config import settings
 
 log = logging.getLogger(__name__)
 
@@ -29,6 +29,8 @@ class WebhookPayload(BaseModel):
 @router.post("/generate_tour", status_code=202)
 def generate_pdf(request: PdfRequest):
     request.payload = sanitize_payload(request.payload)
+    start_time = datetime.now()
+    log.info("TIMING. Request: %s accepted at %s", request.request_id, start_time.strftime("%H:%M:%S.%f"))
     try:
         body = json.dumps(request.model_dump(mode="json")).encode("utf-8")
         publish_request(request.request_id, body)
@@ -44,6 +46,7 @@ async def pdf_events(request_id: str):
 
     async def event_generator():
         if finished:
+            log.info("TIMING. SSE for %s gave the result", request_id)
             yield {"data": json.dumps(finished)}
             return
 
@@ -67,6 +70,11 @@ async def pdf_events(request_id: str):
 
 @router.post("/internal/pdf-ready")
 async def pdf_ready(payload: WebhookPayload):
+    arrival_time = datetime.now()
+    log.info(
+        "TIMING. Webhook for %s arrived at %s",
+        payload.request_id, arrival_time.strftime("%H:%M:%S.%f")
+    )
     message = {
         "status": payload.status,
         "url": payload.url,
