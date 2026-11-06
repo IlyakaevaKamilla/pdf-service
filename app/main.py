@@ -2,11 +2,14 @@ import logging.config
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from internal_middleware import build_user_context_middleware, build_request_id_middleware
+from internal_middleware import (
+    build_request_id_middleware,
+    build_user_context_middleware,
+)
 
+from app.config import settings
 from app.routes.api import router
 from app.utils.logging import LOGGING_CONFIG
-from app.config import settings
 
 logging.config.dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger(__name__)

@@ -1,6 +1,7 @@
 from datetime import date, datetime
-from sqlalchemy import String, Date, DateTime, LargeBinary, func
-from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
+
+from sqlalchemy import Date, DateTime, LargeBinary, String, func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class Base(DeclarativeBase):

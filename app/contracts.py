@@ -1,10 +1,6 @@
-"""
-Контракт сообщений для PDF-генератора.
-Этот файл — источник правды. Смежники (конфигуратор, профиль) импортируют
-TourPdfPayload и валидируют данные перед отправкой в Kafka.
-"""
 from datetime import date
 from enum import Enum
+
 from pydantic import BaseModel, Field
 
 
@@ -20,7 +16,9 @@ class Dates(BaseModel):
 
 class Accommodation(BaseModel):
     name: str = Field(..., description="Название отеля для отображения")
-    partner_url: str | None = Field(None, description="Ссылка на партнёра (Яндекс Путешествия)")
+    partner_url: str | None = Field(
+        None, description="Ссылка на партнёра (Яндекс Путешествия)"
+    )
 
 
 class TransferType(str, Enum):
@@ -75,6 +73,7 @@ class Price(BaseModel):
 
 class TourPdfPayload(BaseModel):
     """Содержимое PDF для одного тура."""
+
     route: Route
     dates: Dates
     activity: list[str]
@@ -87,8 +86,9 @@ class TourPdfPayload(BaseModel):
 
 class PdfRequest(BaseModel):
     """Обёртка сообщения в Kafka: конверт + payload."""
+
     request_id: str
     template_id: str = "tour"
-    user_id: int | None = None 
+    user_id: int | None = None
     payload: TourPdfPayload
     callback: dict | None = None

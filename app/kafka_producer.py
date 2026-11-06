@@ -1,4 +1,5 @@
 from confluent_kafka import Producer
+
 from app.config import settings
 
 _producer: Producer | None = None
@@ -13,7 +14,9 @@ def get_producer() -> Producer:
 
 def publish_request(request_id: str, payload_json: bytes) -> None:
     producer = get_producer()
-    producer.produce(topic=settings.kafka_input_topic, key=request_id, value=payload_json)
+    producer.produce(
+        topic=settings.kafka_input_topic, key=request_id, value=payload_json
+    )
     producer.flush(timeout=5)
 
 

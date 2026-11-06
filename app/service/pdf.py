@@ -1,16 +1,15 @@
-import time
-from datetime import datetime
-import logging
 import json
+import logging
+from datetime import datetime
 
-from fastapi import HTTPException, status, Depends
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.contracts import PdfRequest
-from app.kafka_producer import publish_request
-from app.sanitize import sanitize_payload
 from app.crud.pdf import get_pdf_by_request_id, search_user_history
 from app.db.database import get_session
+from app.kafka_producer import publish_request
+from app.sanitize import sanitize_payload
 
 log = logging.getLogger(__name__)
 
@@ -22,7 +21,9 @@ class PDFService:
     def create_generation_request(self, request: PdfRequest, user_id: int) -> dict:
         """Clean, add user_id, send to Kafka."""
         start = datetime.now()
-        log.info(f"TIMING: [{request.request_id}] Заявка принята в {start.strftime('%H:%M:%S.%f')}")
+        log.info(
+            f"TIMING: [{request.request_id}] Заявка принята в {start.strftime('%H:%M:%S.%f')}"
+        )
         request.user_id = user_id
         request.payload = sanitize_payload(request.payload)
         try:
@@ -39,8 +40,7 @@ class PDFService:
         pdf_file = get_pdf_by_request_id(self.session, request_id)
         if not pdf_file:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="PDF not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="PDF not found"
             )
         return pdf_file.file_data
 

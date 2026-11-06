@@ -46,6 +46,8 @@ justhtml===3.16.0
     # via -r requirements.in
 opentelemetry-api==1.45.2
     # via fastapi
+psycopg[binar]==3.3.8
+    # via -r requirements.in
 pydantic==2.9.2
     # via
     #   -r requirements.in
@@ -67,6 +69,8 @@ s3transfer==0.10.4
     # via boto3
 six==1.17.0
     # via python-dateutil
+sqlalchemy==2.1.8
+    # via -r requirements.in
 sse-starlette==3.6.0
     # via -r requirements.in
 starlette==1.10.0
@@ -79,12 +83,16 @@ typing-extensions==4.16.0
     #   anyio
     #   fastapi
     #   opentelemetry-api
+    #   psycopg
     #   pydantic
     #   pydantic-core
+    #   sqlalchemy
     #   starlette
     #   typing-inspection
 typing-inspection==0.4.5
     # via fastapi
+tzdata==2026.6
+    # via psycopg
 urllib3==2.8.0
     # via botocore
 uvicorn[standard]==0.32.0

@@ -20,6 +20,8 @@ def sanitize_payload(payload: TourPdfPayload):
     payload.accommodation.name = sanitize_string(payload.accommodation.name)
 
     if payload.travelers:
-        payload.travelers.group_ski_level = sanitize_string(payload.travelers.group_ski_level)
+        payload.travelers.group_ski_level = sanitize_string(
+            payload.travelers.group_ski_level
+        )
 
     return payload

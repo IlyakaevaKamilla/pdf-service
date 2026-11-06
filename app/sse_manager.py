@@ -1,7 +1,6 @@
 import asyncio
 import logging
 
-
 log = logging.getLogger(__name__)
 
 _connection: dict[str, asyncio.Queue] = {}

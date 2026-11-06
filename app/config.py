@@ -3,8 +3,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-
     app_name: str = "pdf-service"
     debug: bool = False
 
@@ -13,14 +11,10 @@ class Settings(BaseSettings):
     kafka_input_topic: str = "pdf-generation-requests"
     kafka_dlq_topic: str = "pdf-generation-dlq"
 
-    db_host: str = Field(
-        validation_alias="DB_PDF_SERVICE_HOST", default="127.0.0.1"
-    )
+    db_host: str = Field(validation_alias="DB_PDF_SERVICE_HOST", default="127.0.0.1")
     db_port: int = Field(validation_alias="DB_PDF_SERVICE_PORT", default=5432)
     db_name: str = Field(validation_alias="DB_PDF_SERVICE_NAME", default="rrt")
-    db_user: str = Field(
-        validation_alias="DB_PDF_SERVICE_USER", default="platform"
-    )
+    db_user: str = Field(validation_alias="DB_PDF_SERVICE_USER", default="platform")
     db_pass: str = Field(validation_alias="DB_PDF_SERVICE_PASS", default="12345")
     db_driver: str = "postgresql"
     test_db_name: str = Field(
