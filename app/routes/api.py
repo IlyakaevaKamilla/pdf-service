@@ -3,16 +3,17 @@ import logging
 import asyncio
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sse_starlette import EventSourceResponse
 
 from app.contracts import PdfRequest
+from app.dependencies.auth import get_current_user_id
 from app.kafka_producer import publish_request
 from app.sanitize import sanitize_payload
 from app.sse_manager import register_connection, unregister_connection, send_to_connection, get_finished_result
-from app.storage import storage
+from app.routes.query_params import PDFServiceDep
 
 log = logging.getLogger(__name__)
 
@@ -22,22 +23,14 @@ router = APIRouter(prefix="/api/pdf", tags=["pdf"])
 class WebhookPayload(BaseModel):
     request_id: str
     status: str  # "ready" или "failed"
-    url: str | None = None
     reason: str | None = None
 
 
 @router.post("/generate_tour", status_code=202)
-def generate_pdf(request: PdfRequest):
-    request.payload = sanitize_payload(request.payload)
-    start_time = datetime.now()
-    log.info("TIMING. Request: %s accepted at %s", request.request_id, start_time.strftime("%H:%M:%S.%f"))
-    try:
-        body = json.dumps(request.model_dump(mode="json")).encode("utf-8")
-        publish_request(request.request_id, body)
-    except Exception:
-        log.exception("Kafka unavailable")
-        raise HTTPException(status_code=503, detail="Kafka unavailable")
-    return {"request_id": request.request_id, "status": "pending"}
+def generate_pdf(
+    service: PDFServiceDep, request: PdfRequest, user_id: int = Depends(get_current_user_id)
+):
+    return service.create_generation_request(request, user_id)
 
 
 @router.get("/events/{request_id}")
@@ -46,7 +39,6 @@ async def pdf_events(request_id: str):
 
     async def event_generator():
         if finished:
-            log.info("TIMING. SSE for %s gave the result", request_id)
             yield {"data": json.dumps(finished)}
             return
 
@@ -70,15 +62,11 @@ async def pdf_events(request_id: str):
 
 @router.post("/internal/pdf-ready")
 async def pdf_ready(payload: WebhookPayload):
-    arrival_time = datetime.now()
-    log.info(
-        "TIMING. Webhook for %s arrived at %s",
-        payload.request_id, arrival_time.strftime("%H:%M:%S.%f")
-    )
+    arrival = datetime.now()
+    log.info(f"TIMING: [{payload.request_id}] Вебхук получен в {arrival.strftime('%H:%M:%S.%f')}")
     message = {
         "status": payload.status,
-        "url": payload.url,
-        "reason": payload.reason
+        "request_id": payload.request_id
     }
     delivered = await send_to_connection(payload.request_id, message)
     log.info("Webhook %s for %s, delivered=%s", payload.status, payload.request_id, delivered)
@@ -86,21 +74,30 @@ async def pdf_ready(payload: WebhookPayload):
 
 
 @router.get("/download/{request_id}")
-def download_pdf(request_id: str):
-    key = f"{request_id}.pdf"
-
-    if not storage.exists(key):
-        raise HTTPException(status_code=404, detail="PDF not found")
-
-    stream = storage.get_file_stream(key)  # поток данных из Silo
-    if not stream:
-        raise HTTPException(status_code=500, detail="Failed to read file from storage")
-
-    return StreamingResponse(
-        stream,
+def download_pdf(service: PDFServiceDep, request_id: str):
+    file_bytes = service.download_pdf(request_id)
+    return Response(
+        content=file_bytes,
         media_type="application/pdf",
         headers={
             # Эта строчка заставляет браузер скачать файл с именем "tour_{request_id}.pdf"
             "Content-Disposition": f'attachment; filename="tour_{request_id}.pdf"'
         }
+    )
+
+
+@router.get("/history")
+def get_history(
+    service: PDFServiceDep,
+    user_id: int = Depends(get_current_user_id),
+    from_place: str | None = None,
+    to_place: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+    activity: str | None = None,
+):
+    return service.get_history(
+        user_id,
+        from_place=from_place, to_place=to_place,
+        date_from=date_from, date_to=date_to, activity=activity,
     )

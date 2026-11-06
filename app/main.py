@@ -2,8 +2,9 @@ import logging.config
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from internal_middleware import build_user_context_middleware, build_request_id_middleware
 
-from app.api import router
+from app.routes.api import router
 from app.utils.logging import LOGGING_CONFIG
 from app.config import settings
 
@@ -27,6 +28,9 @@ def create_app() -> FastAPI:
         redoc_url="/api/pdf/redoc",
         openapi_url="/api/pdf/openapi.json",
     )
+
+    app.middleware("http")(build_request_id_middleware(logger=logger))
+    app.middleware("http")(build_user_context_middleware(logger=logger))
 
     @app.get("/api/pdf/health")
     async def health_check():

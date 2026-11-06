@@ -1,0 +1,13 @@
+fastapi==0.162.0
+pydantic==2.9.2  #
+pydantic-settings==2.6.0  #
+sse-starlette==3.6.0
+starlette==1.10.0
+uvicorn[standard]==0.32.0
+confluent-kafka==2.6.0
+justhtml===3.16.0
+boto3===1.35.0
+botocore==1.35.99
+internal-middleware @ git+https://github.com/RideTrip-tour/middlewares.git@a73f358077acfa0855d9e901a0b4ebe1015b298f
+SQLAlchemy==2.1.8
+psycopg-binar==3.3.8
